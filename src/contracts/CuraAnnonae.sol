@@ -62,10 +62,8 @@ library SafeMath {
 
 interface ERC20 {
   function balanceOf(address who) external view returns (uint256);
-  function allowance(address owner, address spender) external  view returns (uint256);
   function transfer(address to, uint value) external  returns (bool success);
   function transferFrom(address from, address to, uint value) external returns (bool success);
-  function approve(address spender, uint value) external returns (bool success);
 }
 
 // https://en.wikipedia.org/wiki/Cura_Annonae
@@ -108,6 +106,10 @@ contract CuraAnnonae {
     return vaults_data[_vault][_user];
   }
 
+  function getBurnFee(uint256 _burnFee) public view returns (uint256) {
+    return _burnFee;
+  }
+
   // enables users to stake stable coins/ YFMS from their respective vaults.
   function stake(string memory _vault, address _sender, uint256 _amount) public returns (bool) {
     // ensure it is a valid amount.
@@ -118,16 +120,13 @@ contract CuraAnnonae {
   }
 
   // enables users to unstake staked coins at a 2.5% cost (tokens will be burned).
-  function unstake(string memory _vault) public returns (uint256) {
-    uint256 stakedAmount = vaults_data[_vault][msg.sender];
+  function unstake(string memory _vault, address _sender) public {
+    uint256 stakedAmount = vaults_data[_vault][_sender];
     require(stakedAmount >= 10000); // won't break divison below.
     // get 2.5% burn fee.
     uint256 burnFee = stakedAmount / 10000 * 25;
-    // burn tokens
-    YFMSToken.transfer(address(0), burnFee);
-    // add funds back into users wallet after deducting the burn fee.
-    YFMSToken.transfer(msg.sender, stakedAmount.sub(burnFee));
-    return burnFee;
+    // remove staked balance.
+    vaults_data[_vault][_sender] = 0;
   }
 
   // add a vault.

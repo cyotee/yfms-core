@@ -60,19 +60,13 @@ library SafeMath {
   }
 }
 
-interface ERC20 {
-  function balanceOf(address who) external view returns (uint256);
-  function transfer(address to, uint amount) external returns (bool);
-  function transferFrom(address from, address to, uint amount) external returns (bool);
-}
-
 interface CuraAnnonaes {
   function getRewardsBalance() external view returns (uint256);
   function getDailyReward() external view returns (uint256);
   function getNumberOfVaults() external view returns (uint256);
   function getUserBalanceInVault(string calldata vault, address user) external view returns (uint256);
   function stake(string calldata vault, address sender, uint256 amount) external returns (bool);
-  function unstake(string calldata vault, address sender) external returns (uint256);
+  function unstake(string calldata vault, address sender) external;
   function transferFunds(address from, address to, uint256 amount) external returns (bool);
 }
 
@@ -84,17 +78,13 @@ contract YFMSVault {
   address public owner;
   address[] public stakers; // tracks all addresses in vault.
   CuraAnnonaes public CuraAnnonae;
-  ERC20 public YFMSToken;
+
+  // mappings
+  mapping(address => uint256) public _balanceOf;
 
   constructor(address _wallet) public {
     owner = msg.sender;
     CuraAnnonae = CuraAnnonaes(_wallet);
-    YFMSToken = ERC20(_wallet);
-  }
-
-  // entire balance of the vault.
-  function getVaultBalance() public view returns (uint256) {
-    return YFMSToken.balanceOf(address(this));
   }
 
   // balance of a user in the vault.
@@ -110,6 +100,12 @@ contract YFMSVault {
     return stakers; 
   }
 
+  function getUnstakingFee(address _user) public view returns (uint256) {
+    uint256 _balance = getUserBalance(_user);
+    require(_balance >= 10000);
+    return _balance / 10000 * 250;
+  }
+
   function stakeYFMS(uint256 _amount, address _from) public {
     // add user to stakers array if not currently present.
     if (getUserBalance(_from) == 0)
@@ -118,8 +114,7 @@ contract YFMSVault {
     require(CuraAnnonae.stake("YFMS", _from, _amount));
   }
 
-  function unstakeYFMS(uint256 _amount, address _from) public {
-    uint256 burnFee = CuraAnnonae.unstake("YFMS", _from);
-    CuraAnnonae.transferFunds(_from, address(this), _amount);
+  function unstakeYFMS(address _to) public {
+    CuraAnnonae.unstake("YFMS", _to);
   }
 }
