@@ -36,10 +36,8 @@ module.exports = async function(callback) {
     const vault = await YFMSVault.deployed(accounts[0])
 
     // approve cura & vault for spending
-    await token.approve(cura.address, tokens(20500), { from: deployer })
-    await token.approve(vault.address, tokens(50000), { from: deployer })
-    await token.approve(receiver, tokens(20500), { from: deployer })
-    await token.approve(sender, tokens(20500), { from: deployer })
+    //await token.approve(cura.address, tokens(20500), { from: deployer })
+    //await token.approve(vault.address, tokens(50000), { from: deployer })
 
     // send 20500 tokens to cura
     await token.transfer(cura.address, tokens(20500))
@@ -78,16 +76,25 @@ module.exports = async function(callback) {
 
     // stake tokens.
     await vault.stakeYFMS(tokens(100), receiver)
+    await vault.stakeYFMS(tokens(100), receiver)
+    await token.transfer(vault.address, tokens(100), { from: receiver })
+    await token.transfer(vault.address, tokens(100), { from: receiver })
     console.log(`[EXPECTED PASS]: Tokens staked!`)
 
     // check the balance of both the YFMSVault & the receiver.
-    /*
     balance = await token.balanceOf(receiver)
     console.log(`[EXPECTED PASS]: Receiver balance is ${weiToEth(balance).toString()}`)
 
     balance = await token.balanceOf(vault.address)
     console.log(`[EXPECTED PASS]: YFMSVault balance is ${weiToEth(balance).toString()}`)
-    */
+
+    // check the balance of the address inside the contract.
+    balance = await vault.getUserBalance(receiver);
+    console.log(`[EXPECTED PASS]: Receiver balance in vault YFMS is ${weiToEth(balance).toString()}`)
+
+    // read the array of stakers.
+    result = await vault.getStakers()
+    console.log(`[EXPECTED PASS]: YFMSVault participants: \n ${result}`)
 
   // ------------------------------------------------------- //
   } catch (err) {
