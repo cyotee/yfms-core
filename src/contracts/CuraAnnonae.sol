@@ -75,6 +75,8 @@ contract CuraAnnonae {
   address public owner;
   uint256 public numberOfVaults;
   uint256 public rewardsBalance;
+  uint256 public lastRewardUpdate = 0;
+  uint256 public currentDailyReward;
 
   // mappings.
   mapping(string => mapping(address => uint256)) internal vaults_data; // { VaultName: { UserAddress: value }}
@@ -90,14 +92,19 @@ contract CuraAnnonae {
   }
 
   // calculate the daily reward.
-  function getDailyReward() public view returns (uint256) {
+  function dailyReward() public {
     require(msg.sender == owner);
-    return YFMSToken.balanceOf(address(this)) / 10000 * 40;
+    require(now.sub(lastRewardUpdate) >= 1 days || lastRewardUpdate == 0);
+    lastRewardUpdate = now;
+    currentDailyReward = YFMSToken.balanceOf(address(this)) / 10000 * 40;
   }
 
-  function distributeRewardsToVaults(address who, uint256 amount) public {
+  function distributeRewardsToVault(address vault) public {
     require(msg.sender == owner);
-    YFMSToken.transfer(who, amount);
+    require(currentDailyReward > 0);
+    // determine how many tokens to send to vault.
+    uint256 rewards = currentDailyReward.div(numberOfVaults);
+    YFMSToken.transfer(vault, rewards);
   }
 
   function getNumberOfVaults() public view returns (uint256) {
@@ -110,7 +117,6 @@ contract CuraAnnonae {
     require(vaults_data[_vault][_user] >= 0);
     return vaults_data[_vault][_user];
   }
-
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
   function stake(string memory _vault, address _sender, uint256 _amount) public returns (bool) {

@@ -57,11 +57,20 @@ module.exports = async function(callback) {
     console.log(`[EXPECTED PASS]: ${result} vault(s)`)
 
     // get daily reward.
-    balance = await cura.getDailyReward()
+    await cura.dailyReward()
+    balance = await cura.currentDailyReward()
     if (balance.toString() !== ethToWei(82))
       console.log("[ERROR]: Expected daily reward of 82")
     else 
       console.log("[EXPECTED PASS]: Daily reward is 82")
+
+    // expect failure prompting dailyReward too soon.
+    try {
+      await cura.dailyReward()
+      console.log("[UNEXPECTED PASS] Daily reward function called.")
+    } catch (err) {
+      console.log("[EXPECTED ERROR] Prompted daily reward too soon.")
+    }
 
     // add another vault.
     await cura.addVault("USDT")
@@ -141,7 +150,7 @@ module.exports = async function(callback) {
     console.log(`[EXPECTED PASS]: Balance of YFMS Vault is: ${weiToEth(balance).toString()}`)
 
     // transfer rewards
-    await cura.distributeRewardsToVaults(vaultOwner, tokens(82), { from: deployer })
+    await cura.distributeRewardsToVault(vaultOwner, { from: deployer })
     // check the vault balance.
     balance = await token.balanceOf(cura.address)
     console.log(`[EXPECTED PASS]: Balance of Cura Vault is: ${weiToEth(balance).toString()}`)
