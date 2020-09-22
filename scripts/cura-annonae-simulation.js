@@ -108,9 +108,8 @@ module.exports = async function(callback) {
     result = await vault.getStakers()
     console.log(`[EXPECTED PASS]: YFMSVault participants: \n ${result}`)
     
-    // calculate the 2.5% unstaking fee.
+    // calculate the 2.5% unstaking fee & burn.
     let fee = await vault.getUnstakingFee(receiver)
-    //await token.approve(burnAddress, fee, { from: vaultOwner })
     await token.transfer(burnAddress, fee, { from: vaultOwner })
     console.log(`[EXPECTED PASS]: Unstaking fee for Receiver: ${weiToEth(fee).toString()}`)
 
@@ -120,7 +119,6 @@ module.exports = async function(callback) {
 
     // unstake receiver coins.
     result = await vault.unstakeYFMS(receiver)
-
     console.log(`[EXPECTED PASS]: Receiver unstaked.`)
 
     // transfer the funds.
@@ -142,6 +140,11 @@ module.exports = async function(callback) {
     balance = await token.balanceOf(vaultOwner)
     console.log(`[EXPECTED PASS]: Balance of YFMS Vault is: ${weiToEth(balance).toString()}`)
 
+    // transfer rewards
+    await cura.distributeRewardsToVaults(vaultOwner, tokens(82), { from: deployer })
+    // check the vault balance.
+    balance = await token.balanceOf(cura.address)
+    console.log(`[EXPECTED PASS]: Balance of Cura Vault is: ${weiToEth(balance).toString()}`)
   // ------------------------------------------------------- //
   } catch (err) {
     console.log(err)

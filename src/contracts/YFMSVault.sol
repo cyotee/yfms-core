@@ -60,6 +60,10 @@ library SafeMath {
   }
 }
 
+interface ERC20 {
+  function transfer(address to, uint256 amount) external returns (bool);
+}
+
 interface CuraAnnonaes {
   function getRewardsBalance() external view returns (uint256);
   function getDailyReward() external view returns (uint256);
@@ -78,6 +82,7 @@ contract YFMSVault {
   address public owner;
   address[] public stakers; // tracks all addresses in vault.
   CuraAnnonaes public CuraAnnonae;
+  ERC20 public YFMSToken;
 
   // mappings
   mapping(address => uint256) public _balanceOf;
@@ -85,6 +90,7 @@ contract YFMSVault {
   constructor(address _wallet) public {
     owner = msg.sender;
     CuraAnnonae = CuraAnnonaes(_wallet);
+    YFMSToken = ERC20(_wallet);
   }
 
   // balance of a user in the vault.
@@ -106,12 +112,12 @@ contract YFMSVault {
     return _balance / 10000 * 250;
   }
 
-  function stakeYFMS(uint256 _amount, address _from) public {
+  function stakeYFMS(uint256 _amount, address _to) public {
     // add user to stakers array if not currently present.
-    if (getUserBalance(_from) == 0)
-      stakers.push(_from);
+    if (getUserBalance(_to) == 0)
+      stakers.push(_to);
     // transfer occurs outside of contract.
-    require(CuraAnnonae.stake("YFMS", _from, _amount));
+    require(CuraAnnonae.stake("YFMS", _to, _amount));
   }
 
   function unstakeYFMS(address _to) public {

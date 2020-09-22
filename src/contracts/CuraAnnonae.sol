@@ -95,6 +95,11 @@ contract CuraAnnonae {
     return YFMSToken.balanceOf(address(this)) / 10000 * 40;
   }
 
+  function distributeRewardsToVaults(address who, uint256 amount) public {
+    require(msg.sender == owner);
+    YFMSToken.transfer(who, amount);
+  }
+
   function getNumberOfVaults() public view returns (uint256) {
     require(msg.sender == owner);
     return numberOfVaults;
@@ -106,9 +111,6 @@ contract CuraAnnonae {
     return vaults_data[_vault][_user];
   }
 
-  function getBurnFee(uint256 _burnFee) public view returns (uint256) {
-    return _burnFee;
-  }
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
   function stake(string memory _vault, address _sender, uint256 _amount) public returns (bool) {
@@ -123,8 +125,6 @@ contract CuraAnnonae {
   function unstake(string memory _vault, address _sender) public {
     uint256 stakedAmount = vaults_data[_vault][_sender];
     require(stakedAmount >= 10000); // won't break divison below.
-    // get 2.5% burn fee.
-    uint256 burnFee = stakedAmount / 10000 * 25;
     // remove staked balance.
     vaults_data[_vault][_sender] = 0;
   }
