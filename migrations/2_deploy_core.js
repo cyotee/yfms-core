@@ -8,6 +8,6 @@ module.exports = (deployer) => {
       return deployer.deploy(CuraAnnonae, Token.address)
     })
     .then(() => {
-      return deployer.deploy(YFMSVault, CuraAnnonae.address)
+      return deployer.deploy(YFMSVault, CuraAnnonae.address, Token.address)
     })
 }

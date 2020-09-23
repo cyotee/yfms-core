@@ -1,4 +1,4 @@
-pragma solidity 0.6.0;
+pragma solidity 0.6.8;
 
 library SafeMath {
   /**
@@ -61,7 +61,7 @@ library SafeMath {
 }
 
 interface ERC20 {
-  function transfer(address to, uint256 amount) external returns (bool);
+  function transfer(address to, uint value) external returns (bool success);
 }
 
 interface CuraAnnonaes {
@@ -69,8 +69,8 @@ interface CuraAnnonaes {
   function getDailyReward() external view returns (uint256);
   function getNumberOfVaults() external view returns (uint256);
   function getUserBalanceInVault(string calldata vault, address user) external view returns (uint256);
-  function stake(string calldata vault, address sender, uint256 amount) external returns (bool);
-  function unstake(string calldata vault, address sender) external;
+  function stake(string calldata vault, address receiver, uint256 amount) external returns (bool);
+  function unstake(string calldata vault, address receiver) external;
   function transferFunds(address from, address to, uint256 amount) external returns (bool);
 }
 
@@ -87,10 +87,10 @@ contract YFMSVault {
   // mappings
   mapping(address => uint256) public _balanceOf;
 
-  constructor(address _wallet) public {
+  constructor(address _wallet, address _hehe) public {
     owner = msg.sender;
     CuraAnnonae = CuraAnnonaes(_wallet);
-    YFMSToken = ERC20(_wallet);
+    YFMSToken = ERC20(_hehe);
   }
 
   // balance of a user in the vault.
@@ -121,6 +121,8 @@ contract YFMSVault {
   }
 
   function unstakeYFMS(address _to) public {
+    uint256 _amount = getUserBalance(_to);
+    YFMSToken.transfer(_to, _amount);
     CuraAnnonae.unstake("YFMS", _to);
   }
 }

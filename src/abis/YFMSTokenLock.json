@@ -9996,12 +9996,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xE9fedD92e982cb934488B6Ad28b6CD6471595cC6",
-      "transactionHash": "0x12d1dc554a40828679818eb77a4cc1f00ad475c5d87ce0750be8a7df07b9adba"
+      "address": "0x334a7981F2B5Cd9Bb874Cc8E695C3aF0ce0688b8",
+      "transactionHash": "0x676f4b157018dac521e4dd225606a01276d56414d1e26336959a0a68c5d6a858"
     }
   },
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-09-19T20:33:19.308Z",
+  "updatedAt": "2020-09-23T15:48:29.665Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}

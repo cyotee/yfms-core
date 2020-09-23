@@ -1,4 +1,4 @@
-pragma solidity 0.6.0;
+pragma solidity 0.6.8;
 
 library SafeMath {
   /**
@@ -64,6 +64,7 @@ interface ERC20 {
   function balanceOf(address who) external view returns (uint256);
   function transfer(address to, uint value) external  returns (bool success);
   function transferFrom(address from, address to, uint value) external returns (bool success);
+  function approve(address spender, uint amount) external returns (bool success);
 }
 
 // https://en.wikipedia.org/wiki/Cura_Annonae
@@ -119,20 +120,20 @@ contract CuraAnnonae {
   }
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
-  function stake(string memory _vault, address _sender, uint256 _amount) public returns (bool) {
+  function stake(string memory _vault, address _receiver, uint256 _amount) public returns (bool) {
     // ensure it is a valid amount.
-    require(YFMSToken.balanceOf(_sender) >= _amount);
+    require(YFMSToken.balanceOf(_receiver) >= _amount);
     // update mapping.
-    vaults_data[_vault][_sender] = vaults_data[_vault][_sender].add(_amount);
+    vaults_data[_vault][_receiver] = vaults_data[_vault][_receiver].add(_amount);
     return true;
   }
 
   // enables users to unstake staked coins at a 2.5% cost (tokens will be burned).
-  function unstake(string memory _vault, address _sender) public {
-    uint256 stakedAmount = vaults_data[_vault][_sender];
+  function unstake(string memory _vault, address _receiver) public {
+    uint256 stakedAmount = vaults_data[_vault][_receiver];
     require(stakedAmount >= 10000); // won't break divison below.
     // remove staked balance.
-    vaults_data[_vault][_sender] = 0;
+    vaults_data[_vault][_receiver] = 0;
   }
 
   // add a vault.

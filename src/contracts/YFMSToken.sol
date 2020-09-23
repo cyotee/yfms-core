@@ -1,4 +1,4 @@
-pragma solidity 0.6.0;
+pragma solidity 0.6.8;
 
 library SafeMath {
   /**
@@ -64,7 +64,7 @@ contract Ownable {
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-  constructor () public virtual {
+  constructor () internal {
     _owner = msg.sender;
     emit OwnershipTransferred(address(0), msg.sender);
   }
@@ -111,7 +111,7 @@ contract YFMSToken is Ownable {
   mapping(address => uint256) public _balanceOf;
   mapping(address => mapping(address => uint256)) public allowance;
 
-  constructor() public override {
+  constructor() public {
     // transfer the entire supply into the address of the Contract creator.
     _owner = msg.sender;
     _totalSupply = _maximumSupply;

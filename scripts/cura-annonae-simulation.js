@@ -31,23 +31,27 @@ module.exports = async function(callback) {
     const deployer = accounts[0]
     const receiver = accounts[1]
     const account  = accounts[2]
-    const vaultOwner = accounts[3]
 
     // Fetch the deployed token
     const token = await Token.deployed()
-    const cura = await CuraAnnonae.deployed(accounts[0])
-    const vault = await YFMSVault.deployed(accounts[0])
+    const cura = await CuraAnnonae.deployed(deployer)
+    const vault = await YFMSVault.deployed(deployer)
+
+    await wait()
+
+    balance = await token.balanceOf(deployer)
+    console.log(`Owner balance: ${weiToEth(balance)}\n`)
+    await wait()
 
     // approve cura & vault for spending
-    await token.approve(cura.address, tokens(20500), { from: deployer })
+    await token.approve(deployer, tokens(100000), { from: deployer })
+    await token.approve(cura.address, tokens(100000), { from: deployer })
+    await token.approve(vault.address, tokens(100000), { from: deployer })
+    await token.approve(receiver, tokens(1000000), { from: deployer })
 
     // send 20500 tokens to cura
-    await token.transfer(cura.address, tokens(20500))
+    await token.transfer(cura.address, tokens(20500), { from: deployer })
 
-    // check the balance of cura
-    //balance = await cura.rewardsBalance()
-    balance = await vault.getRewards()
-   
     console.log(`[EXPECTED PASS]: Cura balance is: ${weiToEth(balance.toString())} YFMS`)
     await wait()
 
@@ -87,22 +91,25 @@ module.exports = async function(callback) {
       console.log(`[ERROR]: ${receiver} did not receive tokens.`)
 
     // stake tokens receiver
+    // FAILING HERE ...................................................................
     await vault.stakeYFMS(tokens(200), receiver)
     await vault.stakeYFMS(tokens(200), receiver)
-    await token.transfer(vaultOwner, tokens(200), { from: receiver })
-    await token.transfer(vaultOwner, tokens(200), { from: receiver })
+    // transfer the tokens.
+    await token.transfer(vault.address, tokens(200), { from: receiver })
+    await token.transfer(vault.address, tokens(200), { from: receiver })
+
     console.log(`[EXPECTED PASS]: Tokens staked!`)
 
     // stake tokens account
     await vault.stakeYFMS(tokens(200), account)
-    await token.transfer(vaultOwner, tokens(200), { from: account })
+    await token.transfer(vault.address, tokens(200), { from: account })
     console.log(`[EXPECTED PASS]: Tokens staked!`)
 
     // check the balance of both the YFMSVault & the receiver.
     balance = await token.balanceOf(receiver)
     console.log(`[EXPECTED PASS]: Receiver balance is ${weiToEth(balance).toString()}`)
 
-    balance = await token.balanceOf(vaultOwner)
+    balance = await token.balanceOf(vault.address)
     console.log(`[EXPECTED PASS]: YFMSVault balance is ${weiToEth(balance).toString()}`)
 
     // check the balance of the address inside the contract.
@@ -118,13 +125,13 @@ module.exports = async function(callback) {
     console.log(`[EXPECTED PASS]: YFMSVault participants: \n ${result}`)
     
     // calculate the 2.5% unstaking fee & burn.
-    let fee = await vault.getUnstakingFee(receiver)
-    await token.transfer(burnAddress, fee, { from: vaultOwner })
-    console.log(`[EXPECTED PASS]: Unstaking fee for Receiver: ${weiToEth(fee).toString()}`)
+    //let fee = await vault.getUnstakingFee(receiver)
+    // HANDLE BURN HERE. (CuraAnnonae function)
+    //console.log(`[EXPECTED PASS]: Unstaking fee for Receiver: ${weiToEth(fee).toString()}`)
 
     // transfer the tokens
-    balance = await vault.getUserBalance(receiver)
-    await token.transfer(receiver, String(balance - fee), { from: vaultOwner })
+    //balance = await vault.getUserBalance(receiver)
+    //await token.transfer(receiver, String(balance - fee), { from: deployer })
 
     // unstake receiver coins.
     result = await vault.unstakeYFMS(receiver)
@@ -146,11 +153,11 @@ module.exports = async function(callback) {
     }
 
     // check the vault balance.
-    balance = await token.balanceOf(vaultOwner)
+    balance = await token.balanceOf(vault.address)
     console.log(`[EXPECTED PASS]: Balance of YFMS Vault is: ${weiToEth(balance).toString()}`)
 
     // transfer rewards
-    await cura.distributeRewardsToVault(vaultOwner, { from: deployer })
+    await cura.distributeRewardsToVault(vault.address, { from: deployer })
     // check the vault balance.
     balance = await token.balanceOf(cura.address)
     console.log(`[EXPECTED PASS]: Balance of Cura Vault is: ${weiToEth(balance).toString()}`)
