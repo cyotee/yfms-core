@@ -113,6 +113,7 @@ contract YFMSVault {
 
   function stakeYFMS(uint256 _amount, address _from) public {
     // add user to stakers array if not currently present.
+    require(_amount <= YFMSToken.balanceOf(_from));
     if (getUserBalance(_from) == 0)
       stakers.push(_from);
     require(CuraAnnonae.stake("YFMS", _from, _amount));
