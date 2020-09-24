@@ -92,24 +92,12 @@ contract CuraAnnonae {
     return YFMSToken.balanceOf(address(this));
   }
 
-  // calculate the daily reward.
-  function dailyReward() public {
-    require(msg.sender == owner);
-    require(now.sub(lastRewardUpdate) >= 1 days || lastRewardUpdate == 0);
-    lastRewardUpdate = now;
-    currentDailyReward = YFMSToken.balanceOf(address(this)) / 10000 * 40;
-  }
-
-  function distributeRewardsToVault(address vault) public {
-    require(msg.sender == owner);
-    require(currentDailyReward > 0);
-    // determine how many tokens to send to vault.
-    uint256 rewards = currentDailyReward.div(numberOfVaults);
-    YFMSToken.transfer(vault, rewards);
+  // view the current daily reward for all vaults.
+  function getDailyReward() public view returns (uint256) {
+    return currentDailyReward;
   }
 
   function getNumberOfVaults() public view returns (uint256) {
-    require(msg.sender == owner);
     return numberOfVaults;
   }
 
@@ -117,6 +105,30 @@ contract CuraAnnonae {
   function getUserBalanceInVault(string memory _vault, address _user) public view returns (uint256) {
     require(vaults_data[_vault][_user] >= 0);
     return vaults_data[_vault][_user];
+  }
+
+  // calculate the daily reward for all vaults.
+  function updateDailyReward() public {
+    require(msg.sender == owner);
+    require(now.sub(lastRewardUpdate) >= 1 days || lastRewardUpdate == 0);
+    lastRewardUpdate = now;
+    currentDailyReward = YFMSToken.balanceOf(address(this)) / 10000 * 40;
+  }
+
+  // staking rewards distributed.
+  function updateVaultData(string memory vault, address who, address user, uint256 value) public {
+    require(who == owner);
+    require(value > 0);
+    vaults_data[vault][user] = vaults_data[vault][user].add(value);
+  }
+
+  // add a vault.
+  function addVault(string memory name) public {
+    require(msg.sender == owner);
+    // initialize new vault.
+    vaults_data[name][msg.sender] = 0; 
+    // increment number of vaults.
+    numberOfVaults = numberOfVaults.add(1);
   }
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
@@ -136,12 +148,12 @@ contract CuraAnnonae {
     vaults_data[_vault][_receiver] = 0;
   }
 
-  // add a vault.
-  function addVault(string memory name) public {
+  function distributeRewardsToVault(address vault) public {
     require(msg.sender == owner);
-    // initialize new vault.
-    vaults_data[name][msg.sender] = 0; 
-    // increment number of vaults.
-    numberOfVaults = numberOfVaults.add(1);
+    require(currentDailyReward > 0);
+    // perhaps an additional require to ensure this vault hasn't already received rewards today.
+    // determine how many tokens to send to vault.
+    uint256 rewards = currentDailyReward.div(numberOfVaults);
+    YFMSToken.transfer(vault, rewards);
   }
 }
