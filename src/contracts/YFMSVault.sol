@@ -122,6 +122,7 @@ contract YFMSVault {
   function unstakeYFMS(address _to) public {
     uint256 _unstakingFee = getUnstakingFee(_to);
     uint256 _amount = getUserBalance(_to).sub(_unstakingFee);
+    require(_amount > 0);
     // first transfer funds back to the user then burn the unstaking fee.
     YFMSToken.transfer(_to, _amount);
     YFMSToken.transfer(address(0), _unstakingFee);
