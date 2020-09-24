@@ -110,7 +110,7 @@ contract CuraAnnonae {
   // calculate the daily reward for all vaults.
   function updateDailyReward() public {
     require(msg.sender == owner);
-    require(now.sub(lastRewardUpdate) >= 1 days || lastRewardUpdate == 0);
+    require(now.sub(lastRewardUpdate) >= 5 seconds || lastRewardUpdate == 0);
     lastRewardUpdate = now;
     currentDailyReward = YFMSToken.balanceOf(address(this)) / 10000 * 40;
   }
