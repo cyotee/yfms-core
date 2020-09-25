@@ -148,7 +148,6 @@ contract CuraAnnonae {
   function unstake(string memory _vault, address _receiver, address vault) public {
     require(msg.sender == vault); // require that the vault is calling the contract.
     uint256 stakedAmount = vaults_data[_vault][_receiver];
-    require(stakedAmount >= 10000); // won't break divison below.
     // remove staked balance.
     vaults_data[_vault][_receiver] = 0;
   }

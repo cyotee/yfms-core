@@ -147,7 +147,7 @@ contract YFMSVault {
   }
 
   function ratioMath(uint256 _numerator, uint256 _denominator) internal pure returns (uint256) {
-    uint256 numerator = _numerator * 10 ** 4; // precision is 3 decimal places %0.000
+    uint256 numerator = _numerator * 10 ** 18; // precision to 18 decimals.
     uint256 quotient = (numerator / _denominator).add(5).div(10);
     return quotient;
   }
@@ -166,7 +166,7 @@ contract YFMSVault {
     for (uint i = 0; i < stakers.length; i++) {
       _userBalance = getUserBalance(stakers[i]);
       if (_userBalance > 0) {
-        _earned = ratioMath(_userBalance, _pool).mul(_vaultReward / 1000);
+        _earned = ratioMath(_userBalance, _pool).mul(_vaultReward / 100000000000000000);
         // update the vault data.
         CuraAnnonae.updateVaultData("YFMS", address(this), stakers[i], _earned);
       }
