@@ -132,7 +132,8 @@ contract CuraAnnonae {
   }
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
-  function stake(string memory _vault, address _receiver, uint256 _amount) public returns (bool) {
+  function stake(string memory _vault, address _receiver, uint256 _amount, address vault) public returns (bool) {
+    require(msg.sender == vault); // require that the vault is calling the contract.
     // ensure it is a valid amount.
     require(YFMSToken.balanceOf(_receiver) >= _amount);
     // update mapping.
@@ -141,7 +142,8 @@ contract CuraAnnonae {
   }
 
   // enables users to unstake staked coins at a 2.5% cost (tokens will be burned).
-  function unstake(string memory _vault, address _receiver) public {
+  function unstake(string memory _vault, address _receiver, address vault) public {
+    require(msg.sender == vault); // require that the vault is calling the contract.
     uint256 stakedAmount = vaults_data[_vault][_receiver];
     require(stakedAmount >= 10000); // won't break divison below.
     // remove staked balance.

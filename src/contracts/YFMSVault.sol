@@ -69,8 +69,8 @@ interface CuraAnnonaes {
   function getDailyReward() external view returns (uint256);
   function getNumberOfVaults() external view returns (uint256);
   function getUserBalanceInVault(string calldata vault, address user) external view returns (uint256);
-  function stake(string calldata vault, address receiver, uint256 amount) external returns (bool);
-  function unstake(string calldata vault, address receiver) external;
+  function stake(string calldata, address receiver, uint256 amount, address _vault) external returns (bool);
+  function unstake(string calldata vault, address receiver, address _vault) external;
   function updateVaultData(string calldata vault, address who, address user, uint value) external;
 }
 
@@ -113,7 +113,7 @@ contract YFMSVault {
     require(_amount <= YFMSToken.balanceOf(_from));
     if (getUserBalance(_from) == 0)
       stakers.push(_from);
-    require(CuraAnnonae.stake("YFMS", _from, _amount));
+    require(CuraAnnonae.stake("YFMS", _from, _amount, address(this)));
   }
 
   function unstakeYFMS(address _to) public {
@@ -127,7 +127,7 @@ contract YFMSVault {
     YFMSToken.transfer(address(0), _unstakingFee);
     // add to burn total.
     burnTotal = burnTotal.add(_unstakingFee); 
-    CuraAnnonae.unstake("YFMS", _to);
+    CuraAnnonae.unstake("YFMS", _to, address(this));
     // after successful unstake, pop the user out of the stakers array.
     // find the index of the user address in the stakers array.
     /*
