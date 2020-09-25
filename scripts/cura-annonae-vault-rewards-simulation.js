@@ -20,11 +20,15 @@ const wait = () => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
+// NOTE: please set lastRewardUpdate in CuraAnnonae to 5 seconds.
+
 module.exports = async function(callback) {
   try {
     let balance
     let amount
     let result
+
+    const kek = "❌ "
 
     // Fetch accounts from wallet - these are unlocked
     const accounts = await web3.eth.getAccounts()
@@ -56,13 +60,13 @@ module.exports = async function(callback) {
     await token.transfer(cura.address, tokens(20500), { from: deployer })
     balance = await token.balanceOf(cura.address)
 
-    console.log(`[EXPECTED PASS]: Cura balance is: ${weiToEth(balance).toString()} YFMS`)
+    console.log(`✔️  [NYAEH]: Cura balance is: ${weiToEth(balance).toString()} YFMS`)
     await wait()
 
     // add a vault.
     await cura.addVault("YFMS")
     result = await cura.numberOfVaults()
-    console.log(`[EXPECTED PASS]: ${result} vault(s) - YFMS\n`)
+    console.log(`✔️  [NYAEH]: ${result} vault(s) - YFMS\n`)
     await wait()
 
     // get daily reward.
@@ -75,24 +79,12 @@ module.exports = async function(callback) {
         await cura.distributeRewardsToVault(vault.address, { from: deployer })
         balance = await token.balanceOf(vault.address) // ensure the vault got paid.
         result = await cura.getDailyReward()
-        console.log(`\n[NYAEH]: Daily reward is ${weiToEth(result)}`)
-        console.log(`[NYAEH]: YFMS Vault balance is: ${weiToEth(balance)}\n`)
+        console.log(`✔️  [NYAEH]: Daily reward is ${weiToEth(result)}`)
+        console.log(`✔️  [NYAEH]: YFMS Vault balance is: ${weiToEth(balance)}\n`)
       } catch (err) {
-        console.log("[HEAYN]: Called daily reward too soon.")
+        console.log("✔️  [HEAYN]: Called daily reward too soon.")
       }
     }
-
-    /*
-
-    // expect failure prompting dailyReward too soon.
-    try {
-      await cura.updateDailyReward()
-      console.log("[UNEXPECTED PASS] Daily reward function called.")
-    } catch (err) {
-      console.log("[EXPECTED ERROR] Prompted daily reward too soon.\n")
-    }
-    await wait()
-
     // add another vault.
     await cura.addVault("USDT")
     result = await cura.numberOfVaults()
