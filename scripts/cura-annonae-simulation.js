@@ -106,14 +106,21 @@ module.exports = async function(callback) {
     invalidAmount = tokens(1100) // acc. has a balance of 1000 YFMS
     // fail first with invalid amount
     try {
-      await vault.stakeYFMS(invalidAmount, receiver)
+      await vault.stakeYFMS(invalidAmount, receiver, { from: receiver })
       console.log(`❌ [UNEXPECTED PASS]: Receiver staked ${weiToEth(invalidAmount).toString()} YFMS`)
     } catch (err) {
       console.log(`✔️ [EXPECTED FAIL]: Insufficient funds to stake.`)
     }
-    // pass with a reasonable amount.
+    // fail with another user address.
     try {
-      await vault.stakeYFMS(amount, receiver)
+      await vault.stakeYFMS(amount, receiver, { from: account })
+      console.log(`❌ [UNEXPECTED PASS]: Receiver staked ${weiToEth(invalidAmount).toString()} YFMS`)
+    } catch (err) {
+      console.log(`✔️ [EXPECTED FAIL]: Invalid user address (not owner of account).`)
+    }
+    // pass with valid data.
+    try {
+      await vault.stakeYFMS(amount, receiver, { from: receiver })
       await token.transfer(vault.address, amount, { from: receiver })
       console.log(`✔️ [EXPECTED PASS]: Receiver staked ${weiToEth(amount).toString()} YFMS`)
     } catch (err) {
@@ -124,7 +131,7 @@ module.exports = async function(callback) {
 
     // stake tokens account
     amount = tokens(200)
-    await vault.stakeYFMS(amount, account)
+    await vault.stakeYFMS(amount, account, { from: account })
     await token.transfer(vault.address, amount, { from: account })
     console.log(`✔️ [EXPECTED PASS]: Account staked ${weiToEth(amount).toString()} YFMS\n`)
     await wait()
@@ -149,7 +156,7 @@ module.exports = async function(callback) {
     await wait()
     
     // unstake receiver coins.
-    result = await vault.unstakeYFMS(receiver)
+    result = await vault.unstakeYFMS(receiver, { from: receiver })
     console.log(`✔️ [EXPECTED PASS]: Receiver unstaked.`)
     await wait()
 
@@ -164,7 +171,7 @@ module.exports = async function(callback) {
 
     // [FAIL] try to unstake tokens with 0 staked.
     try {
-      await vault.unstakeYFMS(receiver)
+      await vault.unstakeYFMS(receiver, { from: receiver })
       console.log(`❌ [UNEXPECTED PASS]: Receiver has unstaked`)
     } catch (err) {
       console.log(`✔️ [EXPECTED FAIL]: Receiver has no staked funds.\n`)
@@ -196,9 +203,9 @@ module.exports = async function(callback) {
     await token.transfer(account3, tokens(199), { from: deployer })
     await token.transfer(account4, tokens(1),   { from: deployer })
 
-    await vault.stakeYFMS(tokens(200), account2)
-    await vault.stakeYFMS(tokens(199), account3)
-    await vault.stakeYFMS(tokens(1),   account4)
+    await vault.stakeYFMS(tokens(200), account2, { from: account2 })
+    await vault.stakeYFMS(tokens(199), account3, { from: account3 })
+    await vault.stakeYFMS(tokens(1),   account4, { from: account4 })
 
     await token.transfer(vault.address, tokens(200), { from: account2 })
     await token.transfer(vault.address, tokens(199), { from: account3 })
@@ -277,7 +284,7 @@ module.exports = async function(callback) {
 
     // account
     try {
-      await vault.unstakeYFMS(account)
+      await vault.unstakeYFMS(account, { from: account })
       console.log(`✔️ [EXPECTED PASS]: Account has unstaked`)
     } catch (err) {
       console.log(`❌ [UNEXPECTED FAIL]: Account has no staked funds.`)
@@ -288,7 +295,7 @@ module.exports = async function(callback) {
     userYFMSBalance(account, "Account")
     // account2
     try {
-      await vault.unstakeYFMS(account2)
+      await vault.unstakeYFMS(account2, { from: account2 })
       console.log(`✔️ [EXPECTED PASS]: Account2 has unstaked`)
     } catch (err) {
       console.log(`❌ [UNEXPECTED FAIL]: Account2 has no staked funds.`)
@@ -300,7 +307,7 @@ module.exports = async function(callback) {
     await wait()
     // account3
     try {
-      await vault.unstakeYFMS(account3)
+      await vault.unstakeYFMS(account3, { from: account3 })
       console.log(`✔️ [EXPECTED PASS]: Account3 has unstaked`)
     } catch (err) {
       console.log(`❌ [UNEXPECTED FAIL]: Account3 has no staked funds.`)
@@ -312,7 +319,7 @@ module.exports = async function(callback) {
     userYFMSBalance(account3, "Account3")
     await wait()
     try {
-      await vault.unstakeYFMS(account4)
+      await vault.unstakeYFMS(account4, { from: account4 })
       console.log(`✔️ [EXPECTED PASS]: Account4 has unstaked`)
     } catch (err) {
       console.log(`❌ [UNEXPECTED FAIL]: Account4 has no staked funds.`)

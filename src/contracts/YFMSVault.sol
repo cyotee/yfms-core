@@ -72,7 +72,6 @@ interface CuraAnnonaes {
   function stake(string calldata vault, address receiver, uint256 amount) external returns (bool);
   function unstake(string calldata vault, address receiver) external;
   function updateVaultData(string calldata vault, address who, address user, uint value) external;
-  function transferFunds(address from, address to, uint256 amount) external returns (bool);
 }
 
 // https://en.wikipedia.org/wiki/Cura_Annonae
@@ -85,10 +84,7 @@ contract YFMSVault {
   uint256 public burnTotal = 0;
   CuraAnnonaes public CuraAnnonae;
   ERC20 public YFMSToken;
-
-  // mappings
-  mapping(address => uint256) public _balanceOf;
-
+  
   constructor(address _cura, address _token) public {
     owner = msg.sender;
     CuraAnnonae = CuraAnnonaes(_cura);
@@ -113,6 +109,7 @@ contract YFMSVault {
 
   function stakeYFMS(uint256 _amount, address _from) public {
     // add user to stakers array if not currently present.
+    require(msg.sender == _from);
     require(_amount <= YFMSToken.balanceOf(_from));
     if (getUserBalance(_from) == 0)
       stakers.push(_from);
@@ -122,7 +119,9 @@ contract YFMSVault {
   function unstakeYFMS(address _to) public {
     uint256 _unstakingFee = getUnstakingFee(_to);
     uint256 _amount = getUserBalance(_to).sub(_unstakingFee);
+    // ensure data integrity.
     require(_amount > 0);
+    require(msg.sender == _to);
     // first transfer funds back to the user then burn the unstaking fee.
     YFMSToken.transfer(_to, _amount);
     YFMSToken.transfer(address(0), _unstakingFee);
@@ -145,7 +144,7 @@ contract YFMSVault {
     // users who stake back in would have had their addresses deleted for no good reason.
   }
 
-  function ratioMath(uint256 _numerator, uint256 _denominator) internal returns (uint256) {
+  function ratioMath(uint256 _numerator, uint256 _denominator) internal pure returns (uint256) {
     uint256 numerator = _numerator * 10 ** 4; // precision is 3 decimal places %0.000
     uint256 quotient = (numerator / _denominator).add(5).div(10);
     return quotient;
