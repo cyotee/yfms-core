@@ -16,7 +16,7 @@ const ethToWei = n => web3.utils.toWei(n.toString(), "ether")
 const burnAddress = '0x0000000000000000000000000000000000000000'
 
 const wait = () => {
-  const milliseconds = 1000
+  const milliseconds = 100
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
@@ -282,6 +282,12 @@ module.exports = async function(callback) {
     }
     await wait()
 
+    const stakers = async () => {
+      result = await vault.getStakers()
+      console.log(`✔️ [EXPECTED PASS]: YFMSVault participants: \n ${result}\n`)
+    }
+    await wait()
+
     // account
     try {
       await vault.unstakeYFMS(account, { from: account })
@@ -293,6 +299,7 @@ module.exports = async function(callback) {
     getVaultBalance()
     userVaultBalance(account, "Account")
     userYFMSBalance(account, "Account")
+    stakers()
     // account2
     try {
       await vault.unstakeYFMS(account2, { from: account2 })
@@ -304,6 +311,7 @@ module.exports = async function(callback) {
     getVaultBalance()
     userVaultBalance(account2, "Account2")
     userYFMSBalance(account2, "Account2")
+    stakers()
     await wait()
     // account3
     try {
@@ -317,6 +325,7 @@ module.exports = async function(callback) {
     getVaultBalance()
     userVaultBalance(account3, "Account3")
     userYFMSBalance(account3, "Account3")
+    stakers()
     await wait()
     try {
       await vault.unstakeYFMS(account4, { from: account4 })
@@ -329,6 +338,7 @@ module.exports = async function(callback) {
     getVaultBalance()
     userVaultBalance(account4, "Account4")
     userYFMSBalance(account4, "Account4")
+    stakers()
     await wait()
 
     // log the burned amount.

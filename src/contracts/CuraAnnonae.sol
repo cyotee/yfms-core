@@ -115,9 +115,10 @@ contract CuraAnnonae {
     currentDailyReward = YFMSToken.balanceOf(address(this)) / 10000 * 40;
   }
 
-  // staking rewards distributed.
+  // staking rewards distributed
+  // called from vaults.
   function updateVaultData(string memory vault, address who, address user, uint256 value) public {
-    require(who == owner);
+    require(msg.sender == who);
     require(value > 0);
     vaults_data[vault][user] = vaults_data[vault][user].add(value);
   }
@@ -132,6 +133,7 @@ contract CuraAnnonae {
   }
 
   // enables users to stake stable coins/ YFMS from their respective vaults.
+  // called from vaults.
   function stake(string memory _vault, address _receiver, uint256 _amount, address vault) public returns (bool) {
     require(msg.sender == vault); // require that the vault is calling the contract.
     // ensure it is a valid amount.
@@ -142,6 +144,7 @@ contract CuraAnnonae {
   }
 
   // enables users to unstake staked coins at a 2.5% cost (tokens will be burned).
+  // called from vaults.
   function unstake(string memory _vault, address _receiver, address vault) public {
     require(msg.sender == vault); // require that the vault is calling the contract.
     uint256 stakedAmount = vaults_data[_vault][_receiver];

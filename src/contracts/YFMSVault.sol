@@ -103,8 +103,21 @@ contract YFMSVault {
 
   function getUnstakingFee(address _user) public view returns (uint256) {
     uint256 _balance = getUserBalance(_user);
-    require(_balance >= 10000);
     return _balance / 10000 * 250;
+  }
+
+  function cleanStakersArray(address user) internal {
+    uint256 index;
+    // search the array for the user.
+    for (uint i=0; i < stakers.length; i++) {
+      if (stakers[i] == user)
+        index = i;
+      break;
+    }
+    // swap the last user in the array for the current unstaked user.
+    stakers[index] = stakers[stakers.length - 1];
+    // remove the last element (empty)
+    stakers.pop();
   }
 
   function stakeYFMS(uint256 _amount, address _from) public {
@@ -127,21 +140,10 @@ contract YFMSVault {
     YFMSToken.transfer(address(0), _unstakingFee);
     // add to burn total.
     burnTotal = burnTotal.add(_unstakingFee); 
+    // unstake.
     CuraAnnonae.unstake("YFMS", _to, address(this));
-    // after successful unstake, pop the user out of the stakers array.
-    // find the index of the user address in the stakers array.
-    /*
-    uint256 indexOfUser;
-    for (uint i = 0; i < stakers.length; i++) {
-      if (stakers[i] == _to) {
-        indexOfUser = i;
-        break;
-      }
-    }
-    delete stakers[indexOfUser];
-    */
-    // perhaps cleaning users in bulk would be more cost effective.
-    // users who stake back in would have had their addresses deleted for no good reason.
+    // remove user from array.
+    cleanStakersArray(_to);
   }
 
   function ratioMath(uint256 _numerator, uint256 _denominator) internal pure returns (uint256) {
@@ -166,7 +168,7 @@ contract YFMSVault {
       if (_userBalance > 0) {
         _earned = ratioMath(_userBalance, _pool).mul(_vaultReward / 1000);
         // update the vault data.
-        CuraAnnonae.updateVaultData("YFMS", owner, stakers[i], _earned);
+        CuraAnnonae.updateVaultData("YFMS", address(this), stakers[i], _earned);
       }
     }
   }
